@@ -11,7 +11,7 @@ var util = require('util');
  *  type can be extracted by body.ContentType
  */
 var s3 = new AWS.S3();
-exports.handler = function(event, context) {
+exports.handler = function (event, context) {
     // Read options from the event.
     console.log("Reading options from event:\n", util.inspect(event, {
         depth: 5
@@ -70,7 +70,7 @@ exports.handler = function(event, context) {
         return;
     }
     // Transform, and upload to same S3 bucket but to a different S3 bucket.
-    async.forEachOf(_sizesArray, function(value, key, callback) {
+    async.forEachOf(_sizesArray, function (value, key, callback) {
         async.waterfall([
 
             function download(next) {
@@ -92,25 +92,25 @@ exports.handler = function(event, context) {
                     response.ContentType);
                 console.log("Conversion");
                 gm(response.Body).antialias(true).density(
-                    300).toBuffer('JPG', function(err,
-                    buffer) {
-                    if (err) {
-                        //next(err);
-                        next(err);
-                    } else {
-                        console.timeEnd(
-                            "convertImage");
-                        next(null, buffer);
-                        //next(null, 'done');
-                    }
-                });
+                    300).toBuffer('JPG', function (err,
+                        buffer) {
+                        if (err) {
+                            //next(err);
+                            next(err);
+                        } else {
+                            console.timeEnd(
+                                "convertImage");
+                            next(null, buffer);
+                            //next(null, 'done');
+                        }
+                    });
             },
             function process(response, next) {
                 console.log("process image");
                 console.time("processImage");
                 // Transform the image buffer in memory.
                 //gm(response.Body).size(function(err, size) {
-                gm(response).size(function(err, size) {
+                gm(response).size(function (err, size) {
                     //console.log("buf content type " + buf.ContentType);
                     // Infer the scaling factor to avoid stretching the image unnaturally.
                     console.log("run " + key +
@@ -124,25 +124,21 @@ exports.handler = function(event, context) {
                         size.width, _sizesArray[
                             key].width / size.height
                     );
-                    console.log("run " + key +
-                        " scalingFactor : " +
-                        scalingFactor);
-                        var oldWidth = _sizesArray[key].width;
-                        var oldHeight = _sizesArray[key].height;
+                    console.log("run " + key + " scalingFactor : " + scalingFactor);
+
+                   
                     var width = scalingFactor * size.width;
                     var height = scalingFactor * size.height;
 
-                    width = width <= oldWidth ? width : oldWidth;
-                    height = height <= oldHeight ? height : oldHeight;
-                   
-                    console.log("run " + key +
-                        " width : " + width);
-                    console.log("run " + key +
-                        " height : " + height);
+                    width = size.width >= width ? width : size.width;
+                    height = size.height >= height ? height : size.height;
+
+                    console.log("run " + key + " width : " + width);
+                    console.log("run " + key + " height : " + height);
                     var index = key;
                     //this.resize({width: width, height: height, format: 'jpg',})
                     this.resize(width, height).toBuffer(
-                        'JPG', function(err,
+                        'JPG', function (err,
                             buffer) {
                             if (err) {
                                 //next(err);
@@ -170,16 +166,16 @@ exports.handler = function(event, context) {
                 s3.putObject({
                     Bucket: dstBucket,
                     Key: "images/" + _sizesArray[
-                            index].destinationPath +
-                        "/" + fileName.slice(0, -4) +
-                        ".jpg",
+                        index].destinationPath +
+                    "/" + fileName.slice(0, -4) +
+                    ".jpg",
                     Body: data,
                     ContentType: 'JPG',
                     ACL: 'public-read'
                 }, next);
                 console.timeEnd("uploadImage");
             }
-        ], function(err, result) {
+        ], function (err, result) {
             if (err) {
                 console.error(err);
             }
@@ -187,7 +183,7 @@ exports.handler = function(event, context) {
             console.log("End of step " + key);
             callback();
         });
-    }, function(err) {
+    }, function (err) {
         if (err) {
             console.error('---->Unable to resize ' + srcBucket +
                 '/' + srcKey + ' and upload to ' + dstBucket +
