@@ -1,0 +1,1 @@
+# for user defined meta data use 'x-amz-meta-' as prefix in key, value not need to be changed.

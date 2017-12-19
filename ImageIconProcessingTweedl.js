@@ -7,7 +7,8 @@ var gm = require('gm').subClass({
 var util = require('util');
 // get reference to S3 client
 /**
- * In this code we can replace 'JPG' by an actual given type, type can be extracted by body.ContentType
+ * In this code we can replace 'JPG' by an actual given type,
+ *  type can be extracted by body.ContentType
  */
 var s3 = new AWS.S3();
 exports.handler = function(event, context) {
@@ -25,27 +26,32 @@ exports.handler = function(event, context) {
         console.error("Destination bucket must not match source bucket.");
         return;
     }
-    var _800px = {
-        width: 800,
+    var _1024px = {
+        width: 1024,
         dstnKey: srcKey,
-        destinationPath: "large"
+        destinationPath: "1024"
     };
-    var _500px = {
-        width: 500,
+    var _512px = {
+        width: 512,
         dstnKey: srcKey,
-        destinationPath: "medium"
+        destinationPath: "512"
     };
-    var _200px = {
-        width: 200,
+    var _256px = {
+        width: 256,
         dstnKey: srcKey,
-        destinationPath: "small"
+        destinationPath: "256"
     };
-    var _45px = {
-        width: 45,
+    var _128px = {
+        width: 128,
         dstnKey: srcKey,
-        destinationPath: "thumbnail"
+        destinationPath: "128"
     };
-    var _sizesArray = [_800px, _500px, _200px, _45px];
+    var _64px = {
+        width: 64,
+        dstnKey: srcKey,
+        destinationPath: "64"
+    };
+    var _sizesArray = [_1024px, _512px, _256px, _128px, _64px];
     var len = _sizesArray.length;
     console.log(len);
     console.log(srcBucket);
@@ -121,10 +127,14 @@ exports.handler = function(event, context) {
                     console.log("run " + key +
                         " scalingFactor : " +
                         scalingFactor);
-                    var width = scalingFactor *
-                        size.width;
-                    var height = scalingFactor *
-                        size.height;
+                        var oldWidth = _sizesArray[key].width;
+                        var oldHeight = _sizesArray[key].height;
+                    var width = scalingFactor * size.width;
+                    var height = scalingFactor * size.height;
+
+                    width = width <= oldWidth ? width : oldWidth;
+                    height = height <= oldHeight ? height : oldHeight;
+                   
                     console.log("run " + key +
                         " width : " + width);
                     console.log("run " + key +
