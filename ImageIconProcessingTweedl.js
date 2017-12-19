@@ -174,7 +174,8 @@ exports.handler = function(event, context) {
                         "/" + fileName.slice(0, -4) +
                         ".jpg",
                     Body: data,
-                    ContentType: 'JPG'
+                    ContentType: 'JPG',
+                    ACL: 'public-read'
                 }, next);
                 console.timeEnd("uploadImage");
             }
