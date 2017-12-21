@@ -5,6 +5,7 @@ var gm = require('gm').subClass({
     imageMagick: true
 });
 var util = require('util');
+import logger from './logger';
 
 /**
  * Below, we can replace 'JPG' by an actual given type,
@@ -16,7 +17,7 @@ var util = require('util');
 var s3 = new AWS.S3();
 exports.handler = function (event, context) {
     // Read options from the event.
-    log.message("Reading options from event:\n", util.inspect(event, { depth: 5 }));
+    logger.message("Reading options from event:\n", util.inspect(event, { depth: 5 }));
     var srcBucket = event.Records[0].s3.bucket.name;
     // Object key may have spaces or unicode non-ASCII characters.
     var srcKey = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
@@ -100,7 +101,7 @@ exports.handler = function (event, context) {
                 // Transform the image buffer in memory.
                 //gm(response.Body).size(function(err, size) {
                 gm(response).size(function (err, size) {
-                    //console.log("buf content type " + buf.ContentType);
+                    logger.message("buf content type " + buf.ContentType);
                     // Infer the scaling factor to avoid stretching the image unnaturally.
 
                     var scalingFactor = Math.min(
@@ -151,7 +152,7 @@ exports.handler = function (event, context) {
             }
         ], function (err, result) {
             if (err) {
-                log.debug(err);
+                logger.message(err);
             }
 
 
@@ -160,9 +161,9 @@ exports.handler = function (event, context) {
     }, function (err) {
         if (err) {
 
-            log.debug('---->Unable to resize ' + srcBucket + '/' + srcKey + ' and upload to ' + dstBucket + '/images' + ' due to an error: ' + err);
+            logger.message('---->Unable to resize ' + srcBucket + '/' + srcKey + ' and upload to ' + dstBucket + '/images' + ' due to an error: ' + err);
         } else {
-            log.debug('---->Successfully resized ' + srcBucket + ' and uploaded to' + dstBucket + "/images");
+            logger.message('---->Successfully resized ' + srcBucket + ' and uploaded to' + dstBucket + "/images");
         }
         context.done();
     });
